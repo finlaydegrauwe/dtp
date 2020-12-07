@@ -75,39 +75,27 @@
 </head>
 
 <body>
-    <audio id="cadi">
-        <source src="cadi.mp3" type="audio/mpeg">
-        De audio werkt niet op dit apparaat.
-    </audio>
-    <audio id="lambo">
-        <source src="lambo.mp3" type="audio/mpeg">
-        De audio werkt niet op dit apparaat.
-    </audio>
-    <audio id="beetle">
-        <source src="beetle.mp3" type="audio/mpeg">
-        De audio werkt niet op dit apparaat.
-    </audio>
-    <audio id="jeep">
-        <source src="jeep.mp3" type="audio/mpeg">
-        De audio werkt niet op dit apparaat.
-    </audio>
+    <script type="text/javascript">
 
-    <script>
-        var cadi = document.getElementById("cadi");
-        var lambo = document.getElementById("lambo");
-        var beetle = document.getElementById("beetle");
-        var jeep = document.getElementById("jeep");
-
-        function playAudio(otto) {
-            otto.play();
+        function go_get() {
+            var base_url = 'http://www.youtube.com/results?search_query=';
+            var search_field = document.getElementById('yourtextfield').value;
+            var playlists = '&sp=EgIQAw%253D%253D&output=embed'
+            var target_url = base_url + search_field + playlists;
+            var ifr = document.getElementById('youriframe');
+            ifr.src = target_url;
+            return false;
         }
+
     </script>
 
     <div class="grid-container">
-        <div class="grid-item" id="cont1" onclick="playAudio(cadi)"><img src="Blauwe_cadillac.png" class="autos"></div>
-        <div class="grid-item" id="cont2" onclick="playAudio(lambo)"><img src="Groene_lambo.png" class="autos"></div>
-        <div class="grid-item" id="cont3" onclick="playAudio(beetle)"><img src="Rode_VW.png" class="autos"></div>
-        <div class="grid-item" id="cont4" onclick="playAudio(jeep)"><img src="Gele_jeep.png" class="autos"></div>
+        <form onsubmit="go_get(); return false;">
+            <input type="text" id="yourtextfield" />
+            <input type="submit" value="Search Playlists" />
+        </form>
+
+        <iframe id="youriframe" width="640" height="360"></iframe>
         <a id="game" href="kies.html">
             <div class="grid-item" id="kies">Ga op reis</div>
         </a>

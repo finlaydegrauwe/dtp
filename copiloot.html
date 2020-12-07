@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copiloot</title>
+    <style>
+        body {
+            margin: 0px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: [start] 1fr 1fr [end];
+            grid-template-rows: 1fr 2fr auto;
+            background-color: #f3f3f3;
+            padding: 10px;
+            height: 100vh;
+        }
+
+        .grid-item {
+            border: 1px solid rgba(0, 0, 0, 0.8);
+            margin: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            text-align: center;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        #cont1 {
+            background-image: url("flanders.png");
+            background-repeat: no-repeat;
+            background-size: cover;
+            grid-column-start: start;
+            grid-column-end: end;
+            width: 98%;
+        }
+
+        #cont2 {
+            grid-column-start: start;
+            grid-column-end: end;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        #cont3 {
+            grid-column-start: start;
+            grid-column-end: end;
+        }
+
+        #back {
+            padding: 10px;
+        }
+
+        #game {
+            background-color: rgb(255, 21, 21);
+            padding: 10px;
+        }
+
+        .autos {
+            height: 20vh;
+            padding: 10px 10px 10px 30px;
+        }
+
+        .text {
+            flex-grow: 2;
+        }
+
+        #near {
+            border-left: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+        #eta {
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+        #tankstation {
+            border-top: 1px solid black;
+            border-right: 1px solid black;
+        }
+
+        #pitstop {
+            font-weight: bold;
+            font-size: 30pt;
+            vertical-align: middle;
+            border-top: 1px solid black;
+            border-left: 1px solid black;
+            padding-top: 45%;
+            background-color: lightgray;
+        }
+
+        .dash {
+            width: 100%;
+            height: 100%;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <canvas id="cont1" class="grid-item" width="1000px" height="500px"></canvas>
+        <div class="grid-item" id="cont2">
+            <div class="dash" id="eta">Verwachte aankomsttijd<h2 id="toa"></h2>
+            </div>
+            <div class="dash" id="near">We zijn dichtbij (stad)<h2 id="city">Hasselt</h2>
+            </div>
+            <div class="dash" id="tankstation">Dichtsbijzijnde tankstation<h2 id="afstandTank">3 km</h2>
+            </div>
+            <div class="dash" onclick="pauseClick()" id="pitstop">Pitstop
+            </div>
+        </div>
+        <a href="kies.html">
+            <div class="grid-item" id="back">Ga terug</div>
+        </a>
+        <a href="index.html">
+            <div class="grid-item" id="game">Beëindig de rit</div>
+        </a>
+    </div>
+
+
+
+    <script>
+        var canvas = document.getElementById("cont1");
+        var ctx = canvas.getContext("2d");
+
+        // set starting values
+        var fps = 10;
+        var percent = 99;
+        var direction = -0.02;
+
+        var pitstop = document.getElementById("pitstop");
+        var stoptime = false;
+        var afstandTank = document.getElementById("afstandTank");
+
+        // start the animation
+        animate();
+
+        function pauseClick() {
+            stoptime = !stoptime;
+        }
+
+        function paused() {
+            if (stoptime === true) {
+                pitstop.style.border = "10px solid #000000";
+                direction = 0;
+            }
+            else if (stoptime === false) {
+                pitstop.style.border = "";
+                direction = -0.02;
+            }
+        }
+
+        function animate() {
+            paused();
+            // set the animation position (0-100)
+            percent += direction;
+            if (percent < 0) {
+                percent = 0;
+                direction = 0;
+            };
+
+            draw(percent);
+
+            // request another frame
+            setTimeout(function () {
+                requestAnimationFrame(animate);
+            }, 1000 / fps);
+        }
+
+
+        // draw the current frame based on sliderValue
+        function draw(sliderValue) {
+
+            // redraw path
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 7;
+
+            ctx.beginPath();
+            ctx.moveTo(170, 120);
+            /*ctx.lineTo(530, 280);
+            ctx.lineTo(540, 265);
+            ctx.lineTo(560, 260);
+            ctx.lineTo(580, 288);
+            ctx.lineTo(625, 295);
+            ctx.lineTo(690, 250);
+            ctx.lineTo(750, 245);
+            ctx.lineTo(780, 215);*/
+            ctx.lineTo(809, 245);
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+
+            // draw the tracking rectangle
+            var xy;
+
+            if (sliderValue < 101) {
+                var percent = sliderValue / 24;
+                xy = getLineXYatPercent({
+                    x: 140,
+                    y: 98
+                }, {
+                    x: 300,
+                    y: 132
+                }, percent);
+            }
+            drawRect(xy, "red");
+
+        }
+
+
+        // draw tracking rect at xy
+        function drawRect(point, color) {
+            ctx.fillStyle = "DodgerBlue";
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.lineTo(point.x - 10, point.y + 1);
+            ctx.lineTo(point.x + 51, point.y + 1);
+            ctx.lineTo(point.x + 42, point.y + 40);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        // line: percent is 0-1
+        function getLineXYatPercent(startPt, endPt, percent) {
+            var dx = endPt.x - startPt.x;
+            var dy = endPt.y - startPt.y;
+            var X = startPt.x + dx * percent;
+            var Y = startPt.y + dy * percent;
+            return ({
+                x: X,
+                y: Y
+            });
+        }
+        var x = setInterval(function () {
+
+            // Get today's date and time
+            var now = new Date().getTime();
+
+            // Find the distance between now and the count down date
+            var distance = percent * 4950;
+
+            // Time calculations for days, hours, minutes and seconds
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            var tankAfstand = Math.floor((percent) % 9) * 3;
+
+            // Output the result in an element with id="demo"
+            document.getElementById("toa").innerHTML = minutes + "m " + seconds + "s ";
+            afstandTank.innerHTML = tankAfstand + " km"
+
+            // If the count down is over, write some text 
+            if (percent < 90) {
+                document.getElementById("city").innerHTML = "Diest";
+            }
+
+            if (percent < 85) {
+                document.getElementById("city").innerHTML = "Aarschot";
+            }
+
+            if (percent < 80) {
+                document.getElementById("city").innerHTML = "Leuven";
+            }
+
+            if (percent < 70) {
+                document.getElementById("city").innerHTML = "Mechelen";
+            }
+
+            if (percent < 60) {
+                document.getElementById("city").innerHTML = "Sint-Niklaas";
+            }
+
+            if (percent < 50) {
+                document.getElementById("city").innerHTML = "Lokeren";
+            }
+
+            if (percent < 40) {
+                document.getElementById("city").innerHTML = "Gent";
+            }
+
+            if (percent < 30) {
+                document.getElementById("city").innerHTML = "Eeklo";
+            }
+
+            if (percent < 20) {
+                document.getElementById("city").innerHTML = "Brugge";
+            }
+
+            if (percent < 10) {
+                document.getElementById("city").innerHTML = "Oostende";
+            }
+
+            if (distance < 1) {
+                clearInterval(x);
+                document.getElementById("toa").innerHTML = "We zijn er!";
+            }
+        }, 1000);
+    </script>
+
+
+</body>
+
+</html>
