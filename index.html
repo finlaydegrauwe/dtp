@@ -23,7 +23,7 @@
         .grid-container {
             display: grid;
             grid-template-columns: [start] auto auto [end];
-            grid-template-rows: 1fr 1fr auto;
+            grid-template-rows: 1fr 1fr 1fr auto;
             background-color: #f3f3f3;
             padding: 10px;
             height: 100vh;
@@ -55,6 +55,14 @@
 
         #cont4 {
             background-color: rgb(246, 250, 0);
+        }
+
+        #cont5 {
+            background-color: rgb(143, 11, 184);
+        }
+
+        #cont6 {
+            background-color: rgb(133, 73, 17);
         }
 
         #game {
@@ -108,6 +116,9 @@
         <div class="grid-item" id="cont2" onclick="playAudio(lambo)"><img src="Groene_lambo.png" class="autos"></div>
         <div class="grid-item" id="cont3" onclick="playAudio(beetle)"><img src="Rode_VW.png" class="autos"></div>
         <div class="grid-item" id="cont4" onclick="playAudio(jeep)"><img src="Gele_jeep.png" class="autos"></div>
+        <div class="grid-item" id="cont5" onclick="playAudio(moto)"><img src="Paarse_motor.png" class="autos"></div>
+        <div class="grid-item" id="cont6" onclick="playAudio(bulldozer)"><img src="Bruine_bulldozer.png" class="autos">
+        </div>
         <a id="game" href="kies.html">
             <div class="grid-item" id="kies">Ga op reis</div>
         </a>

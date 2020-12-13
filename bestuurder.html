@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kies jouw rol</title>
+    <style>
+        body {
+            margin: 0px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: [start] auto auto [end];
+            grid-template-rows: auto 1fr;
+            background-color: #f3f3f3;
+            padding: 10px;
+            height: 100vh;
+        }
+
+        .grid-item {
+            border: 1px solid rgba(0, 0, 0, 0.8);
+            margin: 10px;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            text-align: center;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        #cont1 {
+            grid-column-start: start;
+            grid-column-end: end;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            background-image: url("Asset 18.svg");
+            background-position: center;
+            background-repeat: no-repeat;
+
+        }
+
+        #back {
+            padding: 10px;
+        }
+
+        #game {
+            background-color: rgb(255, 21, 21);
+            padding: 10px;
+        }
+
+        #hoorn {
+            position: absolute;
+            top: 110px;
+            left: 35px;
+        }
+
+        #brandstof {
+            position: absolute;
+            bottom: 35px;
+            left: 35px;
+        }
+
+        #sleutel {
+            position: absolute;
+            top: 110px;
+            right: 35px;
+        }
+
+        #pedalen {
+            position: absolute;
+            padding: 30px 20px 0 30px;
+            bottom: 35px;
+            right: 35px;
+            width: 300px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 60px;
+            background-color: whitesmoke;
+            color: whitesmoke;
+        }
+
+        #display {
+            padding-top: 10px;
+            max-height: 90%;
+        }
+
+        canvas {
+            width: 98%;
+        }
+    </style>
+</head>
+
+<body>
+    <audio id="hoornsound">
+        <source src="honk.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <audio id="start">
+        <source src="start.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <audio id="gaas">
+        <source src="gaas.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <audio id="gaaas">
+        <source src="gaaas.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <audio id="remmotor">
+        <source src="remmotor.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <audio id="idle">
+        <source src="idle.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <div class="grid-container">
+        <a href="kies.html">
+            <div class="grid-item" id="back">Ga terug</div>
+        </a>
+        <a href="index.html">
+            <div class="grid-item" id="game">Beëindig de rit</div>
+        </a>
+        <div class="grid-item" id="cont1">
+            <canvas id="canvas" width="1000px" height="1000px"></canvas>
+            <img src="Asset 13.svg" width="15%" id="hoorn" onclick="horn(hoorn)">
+            <img src="Asset 19.svg" width="15%" id="brandstof">
+            <img src="Asset 17.svg" width="5%" id="sleutel" onclick="sound(start)">
+            <div id="pedalen">
+                <img src="Asset 14.svg" width="100%" id="rem" onclick="rem()" onmousedown="trager()">-
+                <img src="Asset 15.svg" width="100%" id="gas" ontouchstart="sneller()" ontouchend="idler()">
+            </div>
+        </div>
+    </div>
+    <script>
+        var timer = Math.floor((Math.random() * 420000) + 260000);
+        var brandstof = document.getElementById("brandstof");
+        var pinkerTimer;
+        var pinkerAan;
+        var brandstofOpacity = 0.5;
+        var geremd = false;
+        var timerPinker = 1000;
+        var soundInterval;
+        var huidig;
+        var queueSound = false;
+        ///3 states met interval: idle, gas & rem
+
+        var hoorn = document.getElementById("hoornsound");
+        var start = document.getElementById("start");
+        var remmotor = document.getElementById("remmotor");
+        var gaaas = document.getElementById("gaaas");
+        var idle = document.getElementById("idle");
+
+        window.onload = startPinkTimer;
+
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        var radius = canvas.height / 2;
+        var snelheid = 4;
+        var snelheidInterval;
+        ctx.translate(radius, radius);
+        radius = radius * 0.90
+
+        document.addEventListener('long-press', function (e) {
+            console.log(e.target);
+        });
+
+        function startPinkTimer() {
+            pinkerTimer = setTimeout(brandstofleeg, timer);
+            brandstof.style.opacity = "0.2";
+            ctx.lineWidth = radius * 0.1;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.1, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            setInterval(function () {
+                ctx.save();
+                // Use the identity matrix while clearing the canvas
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Restore the transform
+                ctx.restore();
+                ctx.beginPath();
+                ctx.lineWidth = radius * 0.07;
+                ctx.lineCap = "round";
+                ctx.moveTo(0, 0);
+                ctx.rotate(snelheid);
+                ctx.lineTo(0, - radius * 0.8);
+                ctx.strokeStyle = "#FF0000";
+                ctx.stroke();
+                ctx.rotate(-snelheid);
+                if (snelheid < 4) {
+                    snelheid = 4.02;
+                }
+                if (snelheid > 8) {
+                    snelheid = 7.98;
+                }
+            }, 20);
+        }
+
+        function brandstofleeg() {
+            pinkerAan = setInterval(function () {
+                if (brandstofOpacity == 0.5) {
+                    brandstofOpacity = 1;
+                }
+                else if (brandstofOpacity == 1) {
+                    brandstofOpacity = 0.5;
+                }
+                brandstof.style.opacity = brandstofOpacity;
+            }, timerPinker);
+        }
+
+        function sneller() {
+            clearInterval(snelheidInterval);
+            if (snelheid < 8) {
+                snelheidInterval = setInterval(function () { snelheid = snelheid + 0.02 }, 20);
+            }
+        }
+
+        function trager() {
+            clearInterval(snelheidInterval);
+            if (snelheid > 4.2) {
+                snelheidInterval = setInterval(function () { snelheid = snelheid - 0.04 }, 20);
+            }
+        }
+
+        function idler() {
+            clearInterval(snelheidInterval);
+            snelheidInterval = setInterval(function () { snelheid = snelheid - 0.01 }, 20);
+        }
+
+        function horn(target) {
+            target.play();
+        }
+
+        function sound(target) {
+            target.play();
+            huidig = idle;
+            //setTimeout(function () { carsoundplay(idle); }, 1500);
+        }
+        /*
+                function carsound(state) {
+                    if (state == remmotor) {
+                        carsoundplay(remmotor);
+                    } else if (state == gaaas) {
+                        carsoundplay(gaaas);
+                    } else if (state == idle) {
+                        carsoundplay(idle);
+                    }
+                }
+        
+                function carsoundplay(hierse) {
+                    hierse.play()
+                    hierse.addEventListener('timeupdate', function () {
+                        var buffer = .44
+                        if (this.currentTime > this.duration - buffer) {
+                            if (queueSound == false) {
+                                this.currentTime = 0
+                                this.play()
+                            } else {
+                                setTimeout(function () { queueSound = false; }, 1500);
+                            }
+                        }
+                    });
+                }
+        */
+        function rem() {
+            clearInterval(pinkerAan);
+            brandstof.style.opacity = "0.2";
+
+            //queueSound = true;
+        }
+    </script>
+
+</body>
+
+</html>
