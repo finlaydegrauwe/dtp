@@ -147,6 +147,11 @@
         </div>
     </div>
     <script>
+        window.oncontextmenu = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        };
         var timer = Math.floor((Math.random() * 420000) + 260000);
         var brandstof = document.getElementById("brandstof");
         var pinkerTimer;
