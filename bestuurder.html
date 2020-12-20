@@ -27,6 +27,8 @@
             background-color: #f3f3f3;
             padding: 10px;
             height: 100vh;
+            grid-template-areas: "back game"
+                "dash dash";
         }
 
         .grid-item {
@@ -47,18 +49,20 @@
             flex-direction: row;
             align-items: center;
             background-image: url("Asset 18.svg");
-            background-position: center;
             background-repeat: no-repeat;
-
+            background-position: center;
+            grid-area: dash;
         }
 
         #back {
             padding: 10px;
+            grid-area: back;
         }
 
         #game {
             background-color: rgb(255, 21, 21);
             padding: 10px;
+            grid-area: game;
         }
 
         #hoorn {
@@ -100,6 +104,68 @@
         canvas {
             width: 98%;
         }
+
+        @media (max-height: 500px) {
+            .grid-container {
+                grid-template-rows: [start] auto auto [end];
+                grid-template-columns: 1fr 7fr;
+                grid-template-areas: "back dash"
+                    "game dash";
+            }
+
+            #game {
+                height: 70%;
+                display: -webkit-flex;
+                display: flex;
+                align-items: center;
+                /* More style: */
+
+            }
+
+            #back {
+                height: 90%;
+                display: -webkit-flex;
+                display: flex;
+                align-items: center;
+                /* More style: */
+
+            }
+
+            #cont1 {
+                height: 80vh;
+            }
+
+            #hoorn {
+                position: absolute;
+                top: 30px;
+                left: 210px;
+            }
+
+            #brandstof {
+                position: absolute;
+                bottom: 80px;
+                left: 210px;
+            }
+
+            #sleutel {
+                position: absolute;
+                top: 30px;
+                right: 35px;
+            }
+
+            #pedalen {
+                position: absolute;
+                padding: 30px 20px 0 30px;
+                bottom: 0px;
+                right: 0px;
+                width: 250px;
+                display: flex;
+                justify-content: space-between;
+                border-radius: 60px;
+                background-color: whitesmoke;
+                color: whitesmoke;
+            }
+        }
     </style>
 </head>
 
@@ -136,12 +202,12 @@
             <div class="grid-item" id="game">Beëindig de rit</div>
         </a>
         <div class="grid-item" id="cont1">
-            <canvas id="canvas" width="1000px" height="1000px"></canvas>
+            <canvas id="canvas" width="900px" height="600px"></canvas>
             <img src="Asset 13.svg" width="15%" id="hoorn" onclick="horn(hoorn)">
             <img src="Asset 19.svg" width="15%" id="brandstof">
             <img src="Asset 17.svg" width="5%" id="sleutel" onclick="sound(start)">
             <div id="pedalen">
-                <img src="Asset 14.svg" width="100%" id="rem" onclick="rem()" onmousedown="trager()">-
+                <img src="Asset 14.svg" width="100%" id="rem" ontouchstart="trager()" ontouchend="idler()">-
                 <img src="Asset 15.svg" width="100%" id="gas" ontouchstart="sneller()" ontouchend="idler()">
             </div>
         </div>
@@ -152,16 +218,14 @@
             event.stopPropagation();
             return false;
         };
-        var timer = Math.floor((Math.random() * 420000) + 260000);
+        var timer = Math.floor((Math.random() * 100000) + 40000);
         var brandstof = document.getElementById("brandstof");
         var pinkerTimer;
         var pinkerAan;
         var brandstofOpacity = 0.5;
-        var geremd = false;
         var timerPinker = 1000;
-        var soundInterval;
-        var huidig;
-        var queueSound = false;
+        var motorAan = false;
+        var idling = false;
         ///3 states met interval: idle, gas & rem
 
         var hoorn = document.getElementById("hoornsound");
@@ -175,9 +239,10 @@
         var canvas = document.getElementById("canvas");
         var ctx = canvas.getContext("2d");
         var radius = canvas.height / 2;
+        var radiusw = canvas.width / 2;
         var snelheid = 4;
         var snelheidInterval;
-        ctx.translate(radius, radius);
+        ctx.translate(radiusw, radius);
         radius = radius * 0.90
 
         document.addEventListener('long-press', function (e) {
@@ -187,12 +252,6 @@
         function startPinkTimer() {
             pinkerTimer = setTimeout(brandstofleeg, timer);
             brandstof.style.opacity = "0.2";
-            ctx.lineWidth = radius * 0.1;
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(0, 0, radius * 0.1, 0, 2 * Math.PI);
-            ctx.fillStyle = '#333';
-            ctx.fill();
             setInterval(function () {
                 ctx.save();
                 // Use the identity matrix while clearing the canvas
@@ -201,6 +260,12 @@
 
                 // Restore the transform
                 ctx.restore();
+                ctx.lineWidth = radius * 0.1;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * 0.1, 0, 2 * Math.PI);
+                ctx.fillStyle = '#333';
+                ctx.fill();
                 ctx.beginPath();
                 ctx.lineWidth = radius * 0.07;
                 ctx.lineCap = "round";
@@ -211,12 +276,42 @@
                 ctx.stroke();
                 ctx.rotate(-snelheid);
                 if (snelheid < 4) {
-                    snelheid = 4.02;
+                    snelheid = 4.01;
                 }
                 if (snelheid > 8) {
-                    snelheid = 7.98;
+                    snelheid = 7.99;
+                }
+                if (motorAan == true) {
+                    if (idling == true) {
+                        gaaas.removeEventListener('timeupdate', playGaaas);
+                        idle.play();
+                        idle.volume = snelheid / 8;
+                        idle.addEventListener('timeupdate', playIdle);
+
+                    } else if (snelheid > 4.05) {
+                        idle.removeEventListener('timeupdate', playIdle);
+                        gaaas.play();
+                        gaaas.volume = snelheid / 8;
+                        gaaas.addEventListener('timeupdate', playGaaas);
+                    }
                 }
             }, 20);
+        }
+
+        function playIdle() {
+            var buffer = .44;
+            if (this.currentTime > this.duration - buffer) {
+                this.currentTime = 0;
+                this.play();
+            }
+        }
+
+        function playGaaas() {
+            var buffer = .44;
+            if (this.currentTime > this.duration - buffer) {
+                this.currentTime = 0;
+                this.play();
+            }
         }
 
         function brandstofleeg() {
@@ -233,21 +328,24 @@
 
         function sneller() {
             clearInterval(snelheidInterval);
-            if (snelheid < 8) {
+            if (snelheid < 8 && motorAan == true) {
                 snelheidInterval = setInterval(function () { snelheid = snelheid + 0.02 }, 20);
             }
+            idling = false;
         }
 
         function trager() {
             clearInterval(snelheidInterval);
-            if (snelheid > 4.2) {
+            if (snelheid > 4.2 && motorAan == true) {
                 snelheidInterval = setInterval(function () { snelheid = snelheid - 0.04 }, 20);
+                remmotor.play();
             }
         }
 
         function idler() {
             clearInterval(snelheidInterval);
             snelheidInterval = setInterval(function () { snelheid = snelheid - 0.01 }, 20);
+            idling = true;
         }
 
         function horn(target) {
@@ -255,41 +353,26 @@
         }
 
         function sound(target) {
-            target.play();
-            huidig = idle;
-            //setTimeout(function () { carsoundplay(idle); }, 1500);
-        }
-        /*
-                function carsound(state) {
-                    if (state == remmotor) {
-                        carsoundplay(remmotor);
-                    } else if (state == gaaas) {
-                        carsoundplay(gaaas);
-                    } else if (state == idle) {
-                        carsoundplay(idle);
+            if (target == start) {
+                if (motorAan == false) {
+                    start.play();
+                    huidig = idle;
+                    motorAan = true;
+                    setTimeout(function () { idling = true; }, 1500);
+                } else if (motorAan == true) {
+                    start.play();
+                    setTimeout(function () { start.load(); }, 1000)
+                    motorAan = false;
+                    setTimeout(function () { idling = false; }, 1000);
+                    clearInterval(snelheidInterval);
+                    snelheidInterval = setInterval(function () { snelheid = snelheid - 0.06 }, 20);
+                    idle.removeEventListener('timeupdate', playIdle);
+                    if (brandstof.style.opacity > 0.3) {
+                        clearInterval(pinkerAan);
+                        brandstof.style.opacity = "0.2";
                     }
                 }
-        
-                function carsoundplay(hierse) {
-                    hierse.play()
-                    hierse.addEventListener('timeupdate', function () {
-                        var buffer = .44
-                        if (this.currentTime > this.duration - buffer) {
-                            if (queueSound == false) {
-                                this.currentTime = 0
-                                this.play()
-                            } else {
-                                setTimeout(function () { queueSound = false; }, 1500);
-                            }
-                        }
-                    });
-                }
-        */
-        function rem() {
-            clearInterval(pinkerAan);
-            brandstof.style.opacity = "0.2";
-
-            //queueSound = true;
+            }
         }
     </script>
 

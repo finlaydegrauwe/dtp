@@ -99,12 +99,22 @@
         <source src="jeep.mp3" type="audio/mpeg">
         De audio werkt niet op dit apparaat.
     </audio>
+    <audio id="motor">
+        <source src="motor.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
+    <audio id="bull">
+        <source src="bulldozer.mp3" type="audio/mpeg">
+        De audio werkt niet op dit apparaat.
+    </audio>
 
     <script>
         var cadi = document.getElementById("cadi");
         var lambo = document.getElementById("lambo");
         var beetle = document.getElementById("beetle");
         var jeep = document.getElementById("jeep");
+        var motor = document.getElementById("motor");
+        var bull = document.getElementById("bull");
 
         function playAudio(otto) {
             otto.play();
@@ -116,8 +126,8 @@
         <div class="grid-item" id="cont2" onclick="playAudio(lambo)"><img src="Groene_lambo.png" class="autos"></div>
         <div class="grid-item" id="cont3" onclick="playAudio(beetle)"><img src="Rode_VW.png" class="autos"></div>
         <div class="grid-item" id="cont4" onclick="playAudio(jeep)"><img src="Gele_jeep.png" class="autos"></div>
-        <div class="grid-item" id="cont5" onclick="playAudio(moto)"><img src="Paarse_motor.png" class="autos"></div>
-        <div class="grid-item" id="cont6" onclick="playAudio(bulldozer)"><img src="Bruine_bulldozer.png" class="autos">
+        <div class="grid-item" id="cont5" onclick="playAudio(motor)"><img src="Paarse_motor.png" class="autos"></div>
+        <div class="grid-item" id="cont6" onclick="playAudio(bull)"><img src="Bruine_bulldozer.png" class="autos">
         </div>
         <a id="game" href="kies.html">
             <div class="grid-item" id="kies">Ga op reis</div>
